@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
+venv/
+ENV/
+
+# IDE/OS
+.idea/
+.vscode/
+.DS_Store
+
+# Data/cache
+logs/
+checkpoints/
+export/
+outputs/
+runs/
+*.log
+
+# HuggingFace caches
+hf-cache/
+.cache/
+datasets/
+~/.cache/
+~/.huggingface/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model weights
+*.pt
+*.bin
+*.ckpt
+*.safetensors
+
+# Optional: large docs
+*.pdf
