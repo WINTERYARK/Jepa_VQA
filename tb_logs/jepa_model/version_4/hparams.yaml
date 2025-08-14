@@ -1,0 +1,8 @@
+context_prob: 0.7
+image_encoder_name: facebook/dinov2-base
+learning_rate: 0.0001
+predictor_depth: 6
+predictor_embed_dim: 512
+predictor_num_heads: 8
+target_prob: 0.9
+text_encoder_name: facebook/bart-base
