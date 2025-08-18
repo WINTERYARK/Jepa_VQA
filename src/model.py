@@ -37,7 +37,7 @@ class JEPA(pl.LightningModule):
         self.image_encoder = AutoModel.from_pretrained(image_encoder_name)
 
         # Text Encoder (Teacher)
-        self.text_encoder = AutoModel.from_pretrained(text_encoder_name).encoder
+        self.text_encoder = AutoModel.from_pretrained(text_encoder_name).encoder.eval()
         for param in self.text_encoder.parameters():
             param.requires_grad = False  # Freeze the text encoder
 
