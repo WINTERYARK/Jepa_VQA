@@ -31,9 +31,6 @@ class CocoDataset(Dataset):
 class CocoDataModule(pl.LightningDataModule):
     """
     A PyTorch Lightning DataModule for the MS COCO Captions dataset.
-
-    This DataModule handles the downloading, preprocessing, and loading of the dataset.
-    It provides data loaders for training, validation, and testing.
     """
 
     def __init__(
@@ -59,8 +56,7 @@ class CocoDataModule(pl.LightningDataModule):
         """
         if stage == "fit" or stage is None:
             self.train_dataset = CocoDataset(load_dataset("Multimodal-Fatima/COCO_captions_train", split="train"))
-            self.val_dataset = CocoDataset(
-                load_dataset("Multimodal-Fatima/COCO_captions_validation", split="validation"))
+            self.val_dataset = CocoDataset(load_dataset("Multimodal-Fatima/COCO_captions_validation", split="validation"))
         if stage == "test" or stage is None:
             self.test_dataset = CocoDataset(load_dataset("Multimodal-Fatima/COCO_captions_test", split="test"))
 

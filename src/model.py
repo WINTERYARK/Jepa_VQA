@@ -4,6 +4,8 @@ import torch.nn as nn
 from transformers import AutoModel
 
 from .predictor import Predictor
+from typing import Tuple, Union
+import random
 
 
 def random_sample_indices(b: int, t: int, prob: float, device=None) -> torch.Tensor:
@@ -16,12 +18,6 @@ def random_sample_indices(b: int, t: int, prob: float, device=None) -> torch.Ten
 
 
 class JEPA(pl.LightningModule):
-    """
-    A PyTorch Lightning module for the Multimodal Joint-Embedding Predictive Architecture (JEPA).
-
-    This model integrates a student vision encoder, a frozen teacher text encoder, and a predictor
-    to learn a joint embedding space for images and text.
-    """
 
     def __init__(
             self,
@@ -30,8 +26,8 @@ class JEPA(pl.LightningModule):
             predictor_embed_dim: int = 512,
             predictor_num_heads: int = 8,
             predictor_depth: int = 6,
-            context_prob: float = 0.7,
-            target_prob: float = 0.9,
+            context_prob: Union[float, Tuple[float, float]] = (0.4, 0.7), # 0.7-1.0
+            target_prob: Union[float, Tuple[float, float]] = (0.7, 1.0),
             learning_rate: float = 1e-4,
     ):
         super().__init__()
@@ -70,7 +66,15 @@ class JEPA(pl.LightningModule):
 
         # Get context from images
         b, t, _ = image_embeddings.shape
-        context_idxs = random_sample_indices(b=b, t=t, prob=self.hparams.context_prob, device=self.device)
+        
+        # Determine sampling probability, randomizing if a range is given
+        if isinstance(self.hparams.context_prob, tuple):
+            min_prob, max_prob = self.hparams.context_prob
+            context_prob = random.uniform(min_prob, max_prob)
+        else:
+            context_prob = self.hparams.context_prob
+            
+        context_idxs = random_sample_indices(b=b, t=t, prob=context_prob, device=self.device)
         context_embeddings = image_embeddings[torch.arange(b)[:, None], context_idxs]
 
         # Get targets and masks from text
@@ -79,7 +83,14 @@ class JEPA(pl.LightningModule):
         positions = self.text_encoder.embed_positions(mask_token_expanded)
         masks_with_positions = mask_token_expanded + positions
 
-        target_idxs = random_sample_indices(b=b, t=t, prob=self.hparams.target_prob, device=self.device)
+        # Determine sampling probability, randomizing if a range is given
+        if isinstance(self.hparams.target_prob, tuple):
+            min_prob, max_prob = self.hparams.target_prob
+            target_prob = random.uniform(min_prob, max_prob)
+        else:
+            target_prob = self.hparams.target_prob
+
+        target_idxs = random_sample_indices(b=b, t=t, prob=target_prob, device=self.device)
         targets = text_embeddings[torch.arange(b)[:, None], target_idxs]
         target_masks = masks_with_positions[torch.arange(b)[:, None], target_idxs]
 
@@ -111,3 +122,4 @@ class JEPA(pl.LightningModule):
         Configures the optimizer.
         """
         return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
+

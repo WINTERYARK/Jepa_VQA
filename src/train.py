@@ -13,14 +13,16 @@ def main():
     data_module = CocoDataModule(batch_size=16)
 
     # Initialize the JEPA model
-    model = JEPA()
+    model = JEPA(
+        predictor_embed_dim=256,
+    )
 
     # Configure the TensorBoard logger
     logger = TensorBoardLogger("tb_logs", name="jepa_model")
 
     # Initialize the PyTorch Lightning Trainer
     trainer = pl.Trainer(
-        max_epochs=10,
+        max_epochs=50,
         logger=logger,
         accelerator="auto",
         devices="auto",
