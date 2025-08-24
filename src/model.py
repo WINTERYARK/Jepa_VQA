@@ -26,7 +26,7 @@ class JEPA(pl.LightningModule):
             predictor_embed_dim: int = 512,
             predictor_num_heads: int = 8,
             predictor_depth: int = 6,
-            context_prob: Union[float, Tuple[float, float]] = (0.4, 0.7), # 0.7-1.0
+            context_prob: Union[float, Tuple[float, float]] = (0.7, 1.0), # 0.7-1.0
             target_prob: Union[float, Tuple[float, float]] = (0.7, 1.0),
             learning_rate: float = 1e-4,
     ):
@@ -119,7 +119,23 @@ class JEPA(pl.LightningModule):
 
     def configure_optimizers(self):
         """
-        Configures the optimizer.
+        Configures the optimizer and learning rate scheduler.
         """
-        return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode='min',
+            factor=0.2,
+            patience=3,
+            verbose=True
+        )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "val_loss",
+                "interval": "epoch",
+                "frequency": 1,
+            },
+        }
 
